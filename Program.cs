@@ -32,11 +32,17 @@ namespace makiArcGISStyle
 
       string jsonPath = baseGitPath + "www\\maki.json";
       string stylePath = baseGitPath + "ArcGIS\\maki.style";
+      string serverStylePath = baseGitPath + "ArcGIS\\maki.ServerStyle";
       string renderPath = baseGitPath + "renders";
-      string emfPath = baseGitPath + "emfs"; //you'll need to create these locally from the SVG
+      string emfPath = baseGitPath + "emf"; //you'll need to create these locally from the SVG via the bat file
+      
+      //do the Desktop style
       ImportMaki(jsonPath, stylePath, renderPath, emfPath);
-
       ConvertVectorPicturesToRepresentationMarkers(stylePath);
+
+      //do the Server style
+      ImportMaki(jsonPath, serverStylePath, renderPath, emfPath);
+      ConvertVectorPicturesToRepresentationMarkers(serverStylePath);
 
 
       //ESRI License Initializer generated code.
@@ -46,8 +52,8 @@ namespace makiArcGISStyle
     }
     static void ImportMaki(string jsonPath, string stylePath, string renderPath, string emfPath)
     {
-
-      IStyleGallery styleGallery = new StyleGalleryClass();
+      IStyleGallery styleGallery = GetStyleGallery(stylePath);
+      
       IStyleGalleryStorage styleGalleryStorage = styleGallery as IStyleGalleryStorage;
       File.Delete(stylePath); //delete the existing Style to start from scratch
       styleGalleryStorage.TargetFile = stylePath;
@@ -112,6 +118,8 @@ namespace makiArcGISStyle
       DataContractJsonSerializer iconSerializer = new DataContractJsonSerializer(typeof(Icon[]));
       Icon[] icons;
       icons = (Icon[])iconSerializer.ReadObject(jsonStream);
+
+      jsonStream.Close();
       return icons;
     }
     private static IPictureMarkerSymbol MakeMarkerSymbol(string renderPath, string icon, int size, int display, bool isVector)
@@ -127,7 +135,7 @@ namespace makiArcGISStyle
     }
     private static void ConvertVectorPicturesToRepresentationMarkers(string stylePath) 
     {
-      IStyleGallery styleGallery = new StyleGalleryClass();
+      IStyleGallery styleGallery = GetStyleGallery(stylePath);
       IStyleGalleryStorage styleGalleryStorage = styleGallery as IStyleGalleryStorage;
       styleGalleryStorage.TargetFile = stylePath;
       IEnumStyleGalleryItem enumItems = styleGallery.get_Items("Marker Symbols", stylePath, "Vector");
@@ -188,6 +196,20 @@ namespace makiArcGISStyle
       return newMarkerStyleGalleryItem;
 
 
+    }
+    static IStyleGallery GetStyleGallery(string stylePath)
+    {
+      IStyleGallery styleGallery = null;
+      String tempPath = stylePath.ToLower();
+      if (tempPath.Contains(".serverstyle"))
+      {
+        styleGallery = new ServerStyleGalleryClass();
+      }
+      else
+      {
+        styleGallery = new StyleGalleryClass();
+      }
+      return styleGallery;
     }
   }
 }
