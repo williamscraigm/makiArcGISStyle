@@ -30,7 +30,7 @@ namespace makiArcGISStyle
         return;
       }
 
-      string jsonPath = baseGitPath + "www\\maki.json";
+      string jsonPath = baseGitPath + "_includes\\maki.json";
       string stylePath = baseGitPath + "ArcGIS\\maki.style";
       string serverStylePath = baseGitPath + "ArcGIS\\maki.ServerStyle";
       string renderPath = baseGitPath + "renders";
@@ -74,6 +74,7 @@ namespace makiArcGISStyle
       {
         foreach (Icon icon in icons)
         {
+          if (icon.tags[0] == "deprecated") { continue; }
           foreach (int size in sizes)
           {
             //raster version
@@ -98,6 +99,7 @@ namespace makiArcGISStyle
       //vector version
       foreach (Icon icon in icons)
       {
+        if (icon.tags[0] == "deprecated"){continue;}
         foreach (int size in sizes)
         {
           IPictureMarkerSymbol vectorPictureMarkerSymbol = MakeMarkerSymbol(emfPath, icon.icon, size, 1, true);
@@ -105,6 +107,7 @@ namespace makiArcGISStyle
           styleGalleryItemVector.Item = vectorPictureMarkerSymbol;
           styleGalleryItemVector.Name = icon.name + " " + size + "px";
           styleGalleryItemVector.Category = "Vector";
+          tags = string.Join(";", icon.tags); //make array into string
           styleGalleryItemVector.Tags = tags + ";emf" + ";" + size;
           styleGallery.AddItem((IStyleGalleryItem)styleGalleryItemVector);
         }
